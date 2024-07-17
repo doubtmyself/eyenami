@@ -1,4 +1,4 @@
 package team.eyenami.obj
 
-class SettingManager {
+object SettingManager {
 }

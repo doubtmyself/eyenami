@@ -17,6 +17,6 @@ class TimberDebugTree : Timber.DebugTree() {
     }
 
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
-        super.log(priority, tag, "${filterName}[$tag]$message", t)
+        super.log(priority, tag, "${filterName}$message", t)
     }
 }
