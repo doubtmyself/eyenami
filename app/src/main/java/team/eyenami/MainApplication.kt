@@ -5,6 +5,7 @@ import android.content.Context
 import team.eyenami.helper.TimberDebugTree
 import team.eyenami.obj.PropertiesChangeListener
 import team.eyenami.obj.PropertiesChangeMessage
+import team.eyenami.obj.SettingManager
 import timber.log.Timber
 
 
@@ -21,6 +22,7 @@ class MainApplication : Application(), PropertiesChangeListener {
         _appContext = this
 
 
+
 //        if (BuildConfig.DEBUG_MODE) {
 //            Toast.makeText(applicationContext, "DEBUG_MODE", Toast.LENGTH_SHORT).show()
         Timber.plant(TimberDebugTree())
@@ -28,9 +30,14 @@ class MainApplication : Application(), PropertiesChangeListener {
 //            Toast.makeText(applicationContext, "Relese_MODE", Toast.LENGTH_SHORT).show()
 //        }
 
+        initialize();
 
         addListener()
         Timber.e("앱 시작")
+    }
+
+    private fun initialize() {
+        SettingManager.initialize()
     }
 
     private fun addListener() {

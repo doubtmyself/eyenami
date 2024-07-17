@@ -87,6 +87,7 @@ class HomeFragment : Fragment(), SensorEventListener {
         }
     }
 
+
     override fun onPause() {
         super.onPause()
         sensorManager.unregisterListener(this)
