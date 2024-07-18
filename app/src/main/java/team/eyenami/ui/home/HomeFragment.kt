@@ -28,10 +28,10 @@ import androidx.lifecycle.ViewModelProvider
 import team.eyenami.databinding.FragmentHomeBinding
 import java.io.File
 
+private const val SAMPLE_SIZE = 5
 class HomeFragment : Fragment(), SensorEventListener {
 
     private var _binding: FragmentHomeBinding? = null
-
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
@@ -46,6 +46,8 @@ class HomeFragment : Fragment(), SensorEventListener {
 
     private lateinit var imageCapture: ImageCapture
     private lateinit var capturedImageView: ImageView
+
+    private val speedSamples = mutableListOf<Double>()
 
 
     override fun onCreateView(
@@ -98,7 +100,7 @@ class HomeFragment : Fragment(), SensorEventListener {
         event?.let {
             val curTime = System.currentTimeMillis()
             // Only allow one update every 100ms.
-            if ((curTime - lastUpdate) > 100) {
+            if ((curTime - lastUpdate) > 50) {
                 val diffTime = (curTime - lastUpdate)
                 lastUpdate = curTime
 
@@ -106,9 +108,18 @@ class HomeFragment : Fragment(), SensorEventListener {
                 val y = event.values[1]
                 val z = event.values[2]
 
-                val speed = Math.abs(x + y + z - lastX - lastY - lastZ) / diffTime * 10000
+                val deltaX = x - lastX
+                val deltaY = y - lastY
+                val deltaZ = z - lastZ
+                val speed = Math.sqrt((deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ).toDouble()) / diffTime * 10000
 
-                if (speed > 800) {
+                speedSamples.add(speed)
+                if (speedSamples.size > SAMPLE_SIZE) {
+                    speedSamples.removeAt(0)
+                }
+                val averageSpeed = speedSamples.average()
+
+                if (averageSpeed > 100) {
                     // This is a simple threshold to determine running or moving.
                     runningState = true
                     binding.textHome.text = "User is running or moving"

@@ -32,9 +32,6 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
     private fun initialize() {
         chatAdapter = ChatAdapter()
         binding.RecyclerViewChat.adapter = chatAdapter
-        chatAdapter.addMessage(ChatMessage("112", true))
-        chatAdapter.addMessage(ChatMessage("234324", true))
-        chatAdapter.addMessage(ChatMessage("234234", true))
     }
 
     private fun addListener() {
