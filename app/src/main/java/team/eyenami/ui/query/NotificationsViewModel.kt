@@ -1,13 +1,13 @@
-package team.eyenami.ui.dashboard
+package team.eyenami.ui.query
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
-class DashboardViewModel : ViewModel() {
-    //test
+class NotificationsViewModel : ViewModel() {
+
     private val _text = MutableLiveData<String>().apply {
-        value = "This is dashboard Fragment"
+        value = "This is notifications Fragment"
     }
     val text: LiveData<String> = _text
 }

@@ -1,9 +1,6 @@
 package team.eyenami.obj
 
-import androidx.annotation.IntDef
 import team.eyenami.define.SettingProp
-import java.lang.annotation.Retention
-import java.lang.annotation.RetentionPolicy
 
 /**
  * 속성(필드) 변경 업데이트 알림 메시지

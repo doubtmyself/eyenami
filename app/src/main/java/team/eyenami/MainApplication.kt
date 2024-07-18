@@ -20,20 +20,13 @@ class MainApplication : Application(), PropertiesChangeListener {
     override fun onCreate() {
         super.onCreate()
         _appContext = this
-
-
-
-//        if (BuildConfig.DEBUG_MODE) {
-//            Toast.makeText(applicationContext, "DEBUG_MODE", Toast.LENGTH_SHORT).show()
         Timber.plant(TimberDebugTree())
-//        } else {
-//            Toast.makeText(applicationContext, "Relese_MODE", Toast.LENGTH_SHORT).show()
-//        }
 
-        initialize();
+        initialize()
 
         addListener()
         Timber.e("앱 시작")
+
     }
 
     private fun initialize() {
