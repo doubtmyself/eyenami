@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+                name="argTextTitle"
+                type="java.lang.String" />
+
+        <variable
+                name="argTextContent"
+                type="java.lang.String" />
+    </data>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+
+        <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switch_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="13dp"
+                android:text="@{argTextTitle ?? `title`, default = `title`}"
+                android:thumb="@drawable/selector_switch_thumb"
+                app:track="@drawable/switch_track" />
+
+        <TextView
+                android:id="@+id/text_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@{argTextContent ?? `content`, default = `content`}"
+                android:visibility="@{argTextContent == null ? View.GONE : View.VISIBLE }"
+                android:textSize="14sp" />
+
+        <View
+                android:id="@+id/view_line"
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:layout_marginTop="13dp" />
+
+    </LinearLayout>
+</layout>

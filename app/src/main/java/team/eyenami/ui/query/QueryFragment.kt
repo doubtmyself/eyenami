@@ -18,7 +18,6 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
 
     private lateinit var chatAdapter: ChatAdapter
     private val generativeModel = GenerativeModel(
-//        modelName = "gemini-pro-vision",  // TODO 이미지 전송 샘플
         modelName = "gemini-pro",  // 텍스트 전용 모델로 변경
         apiKey = BuildConfig.apiKey
     )

@@ -1,7 +1,10 @@
 <resources>
     <string name="app_name">eyenami</string>
     <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
     <string name="send">send</string>
+    <string name="title_query">query</string>
+    <string name="title_setting">setting</string>
+    <string name="vibration">vibration</string>
+    <string name="vibration_hint">vibration hint</string>
+
 </resources>

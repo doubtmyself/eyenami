@@ -12,14 +12,14 @@
             tools:layout="@layout/fragment_home" />
 
     <fragment
-            android:id="@+id/navigation_dashboard"
-            android:name="team.eyenami.ui.setting.SettingFragment"
-            android:label="@string/title_dashboard"
-            tools:layout="@layout/fragment_setting" />
+            android:id="@+id/navigation_query"
+            android:name="team.eyenami.ui.query.QueryFragment"
+            android:label="@string/title_query"
+            tools:layout="@layout/fragment_query" />
 
     <fragment
-            android:id="@+id/navigation_notifications"
-            android:name="team.eyenami.ui.query.QueryFragment"
-            android:label="@string/title_notifications"
-            tools:layout="@layout/fragment_query" />
+            android:id="@+id/navigation_setting"
+            android:name="team.eyenami.ui.settingFragment.SettingFragment"
+            android:label="@string/title_setting"
+            tools:layout="@layout/fragment_setting" />
 </navigation>

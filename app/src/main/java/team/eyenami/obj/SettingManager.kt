@@ -13,6 +13,7 @@ object SettingManager {
     private val db: AppDatabase get() = AppDatabase.getInstance()
     private lateinit var settingDBM: SettingDBM
     private val propertiesChangeListener = CopyOnWriteArrayList<PropertiesChangeListener>()
+
     fun initialize() {
         runBlocking(Dispatchers.IO) {
             val loadData = db.settingDao().getAll() // 하나만 데이터가 들어갈 예정
@@ -41,6 +42,11 @@ object SettingManager {
         notifyUpdate(PropertiesChangeMessage(SettingProp.VIBRATERUN, this))
     }
 
+    fun getVibrateRun(): Boolean {
+        return settingDBM.vibrateRun
+
+    }
+
 
     private fun notifyUpdate(message: PropertiesChangeMessage) {
         for (item in propertiesChangeListener) {
@@ -49,5 +55,4 @@ object SettingManager {
             }
         }
     }
-
 }
