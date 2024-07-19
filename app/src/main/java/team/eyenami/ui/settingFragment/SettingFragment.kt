@@ -17,7 +17,6 @@ class SettingFragment : Fragment(R.layout.fragment_setting) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.itemVibration.switchTitle.isChecked = SettingManager.getVibrateRun()
-
         addListener()
     }
 

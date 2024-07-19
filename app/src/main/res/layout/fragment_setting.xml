@@ -13,7 +13,7 @@
                 android:layout_height="match_parent">
             <include
                     android:id="@+id/item_vibration"
-                    layout="@layout/item_activity_setting"
+                    layout="@layout/item_switch"
                     app:argTextTitle="@{@string/vibration}"
                     app:argTextContent="@{@string/vibration_hint}"/>
         </androidx.core.widget.NestedScrollView>

@@ -176,21 +176,21 @@ class HomeFragment : Fragment(), SensorEventListener {
 
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
-        imageCapture.takePicture(outputOptions, ContextCompat.getMainExecutor(requireContext()), object : ImageCapture.OnImageSavedCallback {
-            override fun onError(exc: ImageCaptureException) {
-                Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
-            }
-
-            override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
-                val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
-                activity?.runOnUiThread {
-                    capturedImageView.setImageBitmap(bitmap)
-                    capturedImageView.visibility = View.VISIBLE
-                    binding.previewView.visibility = View.GONE
-                }
-            }
-        })
+//        imageCapture.takePicture(outputOptions, ContextCompat.getMainExecutor(requireContext()), object : ImageCapture.OnImageSavedCallback {
+//            override fun onError(exc: ImageCaptureException) {
+//                Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
+//            }
+//
+//            override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+//                val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
+//                val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
+//                activity?.runOnUiThread {
+//                    capturedImageView.setImageBitmap(bitmap)
+//                    capturedImageView.visibility = View.VISIBLE
+//                    binding.previewView.visibility = View.GONE
+//                }
+//            }
+//        })
     }
 
     companion object {

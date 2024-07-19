@@ -6,5 +6,7 @@
     <string name="title_setting">setting</string>
     <string name="vibration">vibration</string>
     <string name="vibration_hint">vibration hint</string>
+    <string name="camera">camera</string>
+    <string name="home">home</string>
 
 </resources>

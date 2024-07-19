@@ -1,13 +1,18 @@
-package team.eyenami
+package team.eyenami.ui
 
+import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.findNavController
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import team.eyenami.ForegroundService
+import team.eyenami.R
 import team.eyenami.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -16,8 +21,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //test
+        initialize()
 
+        if (!areNotificationsEnabled()) {
+            requestNotificationPermission()
+        }
+
+        startForegroundService()
+    }
+
+    private fun initialize() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -33,5 +46,25 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+
     }
+
+    private fun startForegroundService() {
+        val serviceIntent = Intent(this, ForegroundService::class.java)
+        ContextCompat.startForegroundService(this, serviceIntent)
+    }
+
+    private fun areNotificationsEnabled(): Boolean {
+        val notificationManager = NotificationManagerCompat.from(this)
+        return notificationManager.areNotificationsEnabled()
+    }
+
+    private fun requestNotificationPermission() {
+        val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+            putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+        }
+        startActivity(intent)
+    }
+
 }
