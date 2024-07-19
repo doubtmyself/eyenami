@@ -1,5 +1,6 @@
 package team.eyenami.obj.localDB
 
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room.databaseBuilder
 import androidx.room.RoomDatabase
@@ -10,7 +11,10 @@ import team.eyenami.MainApplication
  */
 @Database(
     entities = [SettingDBM::class],
-    version = 1
+    version = 2,
+//    autoMigrations = [
+//        AutoMigration(from = 1, to = 2)
+//    ]
 )
 abstract class AppDatabase : RoomDatabase() {
 //    abstract fun rxProfileDao(): ProfileDao

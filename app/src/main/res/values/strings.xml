@@ -1,12 +1,13 @@
 <resources>
     <string name="app_name">eyenami</string>
-    <string name="title_home">Home</string>
-    <string name="send">send</string>
-    <string name="title_query">query</string>
-    <string name="title_setting">setting</string>
-    <string name="vibration">vibration</string>
-    <string name="vibration_hint">vibration hint</string>
-    <string name="camera">camera</string>
-    <string name="home">home</string>
+    <string name="send">Send</string>
+    <string name="query">Query</string>
+    <string name="setting">Setting</string>
+    <string name="vibration">Vibration</string>
+    <string name="vibration_hint">Vibration hint</string>
+    <string name="detection_count">Detection Time(sec)</string>
+    <string name="detection_count_hint">Set Threat Detection Interval.\nPhotos will be sent at the specified interval to detect potential threats.</string>
+    <string name="camera">Camera</string>
+    <string name="home">Home</string>
 
 </resources>

@@ -44,7 +44,15 @@ object SettingManager {
 
     fun getVibrateRun(): Boolean {
         return settingDBM.vibrateRun
+    }
 
+
+    fun getDetectionCount(): Int {
+        return settingDBM.deletionCount
+    }
+
+    fun setDetectionCount(count : Int)  {
+        settingDBM.deletionCount = count
     }
 
 
