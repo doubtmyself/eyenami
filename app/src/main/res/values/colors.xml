@@ -8,6 +8,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="service_ui">#707070</color>
+    <color name="service_ui_off">#971D1D</color>
     <color name="view_line">#4D707070</color>
 
 </resources>
