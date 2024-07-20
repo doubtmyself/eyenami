@@ -26,7 +26,6 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.google.ai.client.generativeai.common.shared.HarmBlockThreshold
 import com.google.ai.client.generativeai.type.BlockThreshold
 import com.google.ai.client.generativeai.type.HarmCategory
 import com.google.ai.client.generativeai.type.SafetySetting
@@ -39,7 +38,7 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
 
     private val binding by viewBinding(FragmentQueryBinding::bind)
     private lateinit var chatAdapter: ChatAdapter
-    val model = GenerativeModel(
+    private val model = GenerativeModel(
         "gemini-1.5-pro",
         // Retrieve API key as an environmental variable defined in a Build Configuration
         // see https://github.com/google/secrets-gradle-plugin for further instructions
