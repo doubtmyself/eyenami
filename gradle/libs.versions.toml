@@ -21,6 +21,7 @@ timber = "5.0.1"
 viewBindingPropertyDelegate = "1.5.9"
 generativeai = "0.9.0"
 googleAndroidLibrariesMapsplatformSecretsGradlePlugin = "2.0.1"
+common = "0.9.0"
 
 
 [libraries]
@@ -47,6 +48,7 @@ timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "tim
 viewbinding-property-delegate-full = { group = "com.github.kirich1409", name = "viewbindingpropertydelegate-full", version.ref = "viewBindingPropertyDelegate" }
 viewbinding-property-delegate-noreflection = { group = "com.github.kirich1409", name = "viewbindingpropertydelegate-noreflection", version.ref = "viewBindingPropertyDelegate" }
 generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai" }
+common = { group = "com.google.ai.client.generativeai", name = "common", version.ref = "common" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

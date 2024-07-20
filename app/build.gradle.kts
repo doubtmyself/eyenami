@@ -64,6 +64,7 @@ dependencies {
     // room
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.common)
     ksp(libs.androidx.room.compiler)
 
     // timber 로거
