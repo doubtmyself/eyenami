@@ -20,8 +20,6 @@
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/list_gap"
-            android:baselineAligned="false"
             android:orientation="horizontal">
 
         <LinearLayout
@@ -44,19 +42,20 @@
                     android:visibility="@{argTextContent == null ? View.GONE : View.VISIBLE }" />
         </LinearLayout>
 
-        <FrameLayout
+        <Space
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1.5"
-                android:gravity="center">
+                android:layout_weight="0.25" />
 
-            <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/switch_check"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:thumb="@drawable/selector_switch_thumb"
-                    app:track="@drawable/switch_track" />
-        </FrameLayout>
+        <NumberPicker
+                android:id="@+id/number_picker"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+
+        <Space
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.25" />
     </LinearLayout>
 </layout>

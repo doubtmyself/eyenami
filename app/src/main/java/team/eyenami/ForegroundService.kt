@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.IBinder
 import android.widget.RemoteViews
 import androidx.core.app.NotificationCompat
+import team.eyenami.ui.MainActivity
 import timber.log.Timber
 
 class ForegroundService : Service() {
@@ -23,14 +24,12 @@ class ForegroundService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_CAMERA -> {
-                Timber.d("Start Foreground Service")
-                val notification = createNotification()
-                startForeground(NOTIFICATION_ID, notification)
-                // 서비스 시작 시 수행할 작업
                 startRecording()
             }
             ACTION_HOME -> {
-
+//                val mainIntent = Intent(this, MainActivity::class.java)
+//                mainIntent.flags = (Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+//                startActivity(mainIntent)
             }
             else -> {
                 Timber.d("Default Service Command")
@@ -47,9 +46,9 @@ class ForegroundService : Service() {
 
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
-            Companion.CHANNEL_ID,
+            CHANNEL_ID,
             "Foreground Service Channel",
-            NotificationManager.IMPORTANCE_DEFAULT
+            NotificationManager.IMPORTANCE_HIGH
         )
         val manager = getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(channel)
@@ -63,10 +62,13 @@ class ForegroundService : Service() {
         }
         val cameraPendingIntent = PendingIntent.getService(this, 0, cameraIntent, PendingIntent.FLAG_IMMUTABLE)
 
-        val homeIntent = Intent(this, ForegroundService::class.java).apply {
+        val homeIntent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             action = ACTION_HOME
         }
-        val homePendingIntent = PendingIntent.getService(this, 0, homeIntent, PendingIntent.FLAG_IMMUTABLE)
+
+        val homePendingIntent = PendingIntent.getActivity(this, 0, homeIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+
 
         notificationLayout.setOnClickPendingIntent(R.id.btn_camera, cameraPendingIntent)
         notificationLayout.setOnClickPendingIntent(R.id.btn_home, homePendingIntent)
@@ -74,6 +76,8 @@ class ForegroundService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setCustomContentView(notificationLayout)
+            .setSilent(true)
+            .setOngoing(true)
             .build()
     }
 

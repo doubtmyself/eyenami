@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="50dp"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:orientation="horizontal"
         android:gravity="center"
-        android:paddingHorizontal="15dp">
+        android:paddingHorizontal="10dp">
 
     <TextView
             android:id="@+id/app_name"
@@ -16,42 +17,15 @@
             android:textStyle="bold" />
 
 
-    <LinearLayout
+    <Button
             android:id="@+id/btn_camera"
-            android:orientation="vertical"
-            android:layout_width="40dp"
-            android:gravity="center"
-            android:layout_marginHorizontal="5dp"
-            android:layout_height="wrap_content">
+            style="@style/NotificationButton"
+            android:drawableTop="@drawable/ic_eye"
+            android:text="@string/camera"  />
 
-        <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_eye" />
-
-        <TextView
-                android:layout_width="40dp"
-                android:layout_height="20dp"
-                android:text="@string/camera" />
-    </LinearLayout>
-
-    <LinearLayout
+    <Button
             android:id="@+id/btn_home"
-            android:orientation="vertical"
-            android:layout_width="40dp"
-            android:gravity="center"
-            android:layout_marginHorizontal="5dp"
-            android:layout_height="wrap_content">
-
-
-        <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_home" />
-
-        <TextView
-                android:layout_width="40dp"
-                android:layout_height="20dp"
-                android:text="@string/home" />
-    </LinearLayout>
+            style="@style/NotificationButton"
+            android:drawableTop="@drawable/ic_home"
+            android:text="@string/home"/>
 </LinearLayout>

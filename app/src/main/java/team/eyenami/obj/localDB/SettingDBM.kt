@@ -15,4 +15,5 @@ data class SettingDBM(
         @ColumnInfo(name = "ID")
         val ID: Int) {
     var vibrateRun :Boolean = false
+    var deletionCount :Int = 5
 }

@@ -1,22 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            xmlns:tools="http://schemas.android.com/tools"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
 
-        <androidx.core.widget.NestedScrollView
+
+    <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_marginHorizontal="@dimen/activity_horizontal_margin"
+            android:layout_height="match_parent">
+
+        <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_marginHorizontal="@dimen/activity_horizontal_margin"
-                android:layout_height="match_parent">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+
             <include
                     android:id="@+id/item_vibration"
                     layout="@layout/item_switch"
                     app:argTextTitle="@{@string/vibration}"
-                    app:argTextContent="@{@string/vibration_hint}"/>
-        </androidx.core.widget.NestedScrollView>
-    </LinearLayout>
+                    app:argTextContent="@{@string/vibration_hint}" />
 
+            <View
+                    android:id="@+id/view_line"
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:background="@color/view_line" />
+
+            <include
+                    android:id="@+id/item_detection_count"
+                    layout="@layout/item_number"
+                    app:argTextTitle="@{@string/detection_count}"
+                    app:argTextContent="@{@string/detection_count_hint}" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 </layout>
