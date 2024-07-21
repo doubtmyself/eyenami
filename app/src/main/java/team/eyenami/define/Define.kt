@@ -6,3 +6,8 @@ enum class SettingProp {
 
 
 
+
+enum class TimeUnit(public var value :Int){
+    MS(1000)
+}
+
