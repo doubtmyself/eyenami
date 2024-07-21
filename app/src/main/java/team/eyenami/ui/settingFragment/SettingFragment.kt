@@ -1,17 +1,13 @@
 package team.eyenami.ui.settingFragment
 
 import android.os.Bundle
-import android.view.MotionEvent
 import android.view.View
-import android.view.ViewConfiguration
-import android.widget.NumberPicker
 import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.Fragment
 import by.kirich1409.viewbindingdelegate.viewBinding
 import team.eyenami.R
 import team.eyenami.databinding.FragmentSettingBinding
 import team.eyenami.obj.SettingManager
-import kotlin.math.abs
 
 class SettingFragment : Fragment(R.layout.fragment_setting) {
 

@@ -10,5 +10,7 @@
     <color name="service_ui">#707070</color>
     <color name="service_ui_off">#971D1D</color>
     <color name="view_line">#4D707070</color>
+    <color name="progressbar_start">#FFBB86FC</color>
+    <color name="progressbar_end">#FF6200EE</color>
 
 </resources>

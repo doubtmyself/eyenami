@@ -50,6 +50,11 @@ import java.util.concurrent.Executors
 
 class QueryFragment : Fragment(R.layout.fragment_query) {
 
+    companion object {
+        private const val REQUEST_CODE_PERMISSIONS = 10
+        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+    }
+
     private val binding by viewBinding(FragmentQueryBinding::bind)
     private lateinit var chatAdapter: ChatAdapter
     private val gson = Gson()
@@ -130,10 +135,7 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
         }
     }
 
-    companion object {
-        private const val REQUEST_CODE_PERMISSIONS = 10
-        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
-    }
+
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED
@@ -168,20 +170,6 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
                 Timber.e("TTS: Initialization failed")
             }
         })
-
-//        ttsSpeed = TextToSpeech(activity, TextToSpeech.OnInitListener { status ->
-//            if (status == TextToSpeech.SUCCESS) {
-//                val result = tts.setLanguage(Util.getSystemLanguage())
-//                tts.setSpeechRate(2.0f) // 음성 속도를 2배로 설정
-//                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-//                    Timber.e("TTS: Language is not supported")
-//                }
-//            } else {
-//                Timber.e("TTS: Initialization failed")
-//            }
-//        })
-
-
     }
 
     private fun addListener() {
@@ -345,6 +333,4 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
         super.onDestroyView()
         cameraExecutor.shutdown()
     }
-
-
 }

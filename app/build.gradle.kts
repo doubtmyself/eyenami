@@ -82,4 +82,13 @@ dependencies {
 
     //gson
     implementation(libs.gson)
+
+    //circularprogressbar
+    // https://github.com/lopspower/CircularProgressBar
+    implementation(libs.circularprogressbar)
+
+    //audiovisualizer
+    //https://github.com/gauravk95/audio-visualizer-android
+//    implementation(libs.audiovisualizer)
+    implementation(libs.lottie)
 }
