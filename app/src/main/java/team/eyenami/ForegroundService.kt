@@ -17,7 +17,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import team.eyenami.define.TimeUnit
 import team.eyenami.obj.SettingManager
 import team.eyenami.ui.MainActivity
 import timber.log.Timber
@@ -132,7 +131,7 @@ class ForegroundService : LifecycleService() {
                 while (isCapturing) {
                     StorageManager.manageStorage(MainApplication.appContext)
                     capturePhoto()
-                    delay(SettingManager.getDetectionCount() * TimeUnit.MS.value.toLong()) // 5초 대기
+                    delay(SettingManager.getDetectionCountMS()) // 5초 대기
                 }
             }
         }

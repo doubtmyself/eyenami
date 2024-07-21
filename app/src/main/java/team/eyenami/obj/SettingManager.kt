@@ -4,7 +4,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import team.eyenami.define.SettingProp
+import team.eyenami.utills.SettingProp
 import team.eyenami.obj.localDB.AppDatabase
 import team.eyenami.obj.localDB.SettingDBM
 import java.util.concurrent.CopyOnWriteArrayList
@@ -53,6 +53,10 @@ object SettingManager {
 
     fun setDetectionCount(count : Int)  {
         settingDBM.deletionCount = count
+    }
+
+    fun getDetectionCountMS(): Long {
+        return settingDBM.deletionCount.toLong() * 1000L
     }
 
 

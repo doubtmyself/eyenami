@@ -20,6 +20,8 @@ import org.json.JSONObject
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Environment
+import android.speech.tts.TextToSpeech
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -30,6 +32,13 @@ import com.google.ai.client.generativeai.type.BlockThreshold
 import com.google.ai.client.generativeai.type.HarmCategory
 import com.google.ai.client.generativeai.type.SafetySetting
 import com.google.ai.client.generativeai.type.content
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
+import team.eyenami.obj.SettingManager
+import team.eyenami.utills.Util
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -87,7 +96,9 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
     
     항상 이 형식을 따라 응답하세요. 추가 정보나 설명이 필요하면 description 내에서 간결하게 제공하세요.
     """
+    private lateinit var wkJob: Job
 
+    private lateinit var tts: TextToSpeech
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (allPermissionsGranted()) {
@@ -126,11 +137,40 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
             }
         }
 
+        tts = TextToSpeech(activity, TextToSpeech.OnInitListener { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                val result = tts.setLanguage(Util.getSystemLanguage())
+                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    Timber.e("TTS: Language is not supported")
+                }
+            } else {
+                Timber.e("TTS: Initialization failed")
+            }
+        })
     }
 
     private fun addListener() {
-        binding.BtnQuery.setOnClickListener {
+
+        binding.btnQuery.setOnClickListener {
             takePhoto()
+        }
+
+        binding.btnQueryContinue.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                wkJob = lifecycleScope.launch(Dispatchers.IO) {
+                    while (isActive) {
+                        launch {
+                            takePhoto()
+                        }
+
+                        delay(SettingManager.getDetectionCountMS()) // 작업을 반복할 간격을 설정 (예: 1초)
+                    }
+                }
+            } else {
+                if (::wkJob.isInitialized && wkJob.isActive) {
+                    wkJob.cancel()
+                }
+            }
         }
     }
 
@@ -153,7 +193,9 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
 
     private fun takePhoto() {
         Timber.d("Taking photo...")
-        val photoFile = File(requireContext().externalMediaDirs.firstOrNull(), "${System.currentTimeMillis()}.jpg")
+        val photoFile = File(
+            requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+            "${System.currentTimeMillis()}.jpg")
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
         imageCapture.takePicture(outputOptions, cameraExecutor, object : ImageCapture.OnImageSavedCallback {
@@ -164,22 +206,23 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
             override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                 val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
                 val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
-                processCapturedImage(bitmap)
+                lifecycleScope.launch(Dispatchers.IO){
+                    processCapturedImage(bitmap)
+                }
             }
         })
     }
 
-    private fun processCapturedImage(bitmap: Bitmap) {
-        lifecycleScope.launch {
-            try {
-                Timber.d("Processing captured image...")
-                val response = model.generateContent(
-                    content {
-                        image(bitmap)
-                        text("이 이미지를 분석하고, 시각장애인에게 가장 중요한 정보를 제공하세요. 반드시 이전에 제공된 JSON 형식과 예시를 따라 응답하세요.")
-                    }
-                )
-
+    private suspend fun processCapturedImage(bitmap: Bitmap) {
+        try {
+            Timber.d("Processing captured image...")
+            val response = chat.sendMessage(
+                content {
+                    image(bitmap)
+                    text("이 이미지를 분석하고, 시각장애인에게 가장 중요한 정보를 제공하세요. 반드시 이전에 제공된 JSON 형식과 예시를 따라 응답하세요.")
+                }
+            )
+//            withContext(Dispatchers.Main) {
                 response.text?.let { responseText ->
                     Timber.d("AI response: $responseText")
                     try {
@@ -187,8 +230,15 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
                         val responseObject = jsonResponse.optJSONObject("response")
                         if (responseObject != null) {
                             val category = responseObject.optString("category", "INFO")
-                            val description = responseObject.optString("description", "정보를 제공할 수 없습니다.")
+                            val description =
+                                responseObject.optString("description", "정보를 제공할 수 없습니다.")
                             chatAdapter.addMessage(ChatMessage("$category: $description", true))
+                            tts.speak(
+                                "$category: $description",
+                                TextToSpeech.QUEUE_FLUSH,
+                                null,
+                                null
+                            )
                         } else {
                             // JSON 형식이 맞지 않을 경우 전체 응답을 표시
                             chatAdapter.addMessage(ChatMessage("INFO: $responseText", true))
@@ -201,10 +251,10 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
                     Timber.e("Empty response from AI")
                     chatAdapter.addMessage(ChatMessage("AI로부터 빈 응답을 받았습니다.", true))
                 }
-            } catch (e: Exception) {
-                Timber.e("Error generating content from image: ${e.message}")
-                chatAdapter.addMessage(ChatMessage("이미지 처리 중 오류: ${e.message}", true))
-            }
+//            }
+        } catch (e: Exception) {
+            Timber.e("Error generating content from image: ${e.message}")
+            chatAdapter.addMessage(ChatMessage("이미지 처리 중 오류: ${e.message}", true))
         }
     }
 

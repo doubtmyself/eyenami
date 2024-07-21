@@ -1,6 +1,6 @@
 package team.eyenami.obj
 
-import team.eyenami.define.SettingProp
+import team.eyenami.utills.SettingProp
 
 /**
  * 속성(필드) 변경 업데이트 알림 메시지

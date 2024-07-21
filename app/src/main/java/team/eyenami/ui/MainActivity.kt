@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
             requestNotificationPermission()
         }
 
-        startForegroundService()
+//        startForegroundService()
     }
 
     private fun initialize() {

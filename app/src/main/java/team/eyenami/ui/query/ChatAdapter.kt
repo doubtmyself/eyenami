@@ -3,6 +3,8 @@ package team.eyenami.ui.query
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import team.eyenami.databinding.ItemChatMessageBinding
 
 class ChatAdapter : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
@@ -30,8 +32,10 @@ class ChatAdapter : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
 
     override fun getItemCount() = messages.size
 
-    fun addMessage(message: ChatMessage) {
-        messages.add(message)
-        notifyItemInserted(messages.size - 1)
+    suspend fun addMessage(message: ChatMessage) {
+        withContext(Dispatchers.Main) {
+            messages.add(message)
+            notifyItemInserted(messages.size - 1)
+        }
     }
 }
