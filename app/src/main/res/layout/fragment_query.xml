@@ -55,11 +55,13 @@
                     android:layout_width="wrap_content"
                     android:layout_height="60dp"
                     android:text="@string/send"
+                    android:enabled="false"
                     android:contentDescription="@string/send" />
             <ToggleButton
                     android:id="@+id/btn_query_continue"
                     android:layout_width="wrap_content"
                     android:layout_height="60dp"
+                    android:enabled="false"
                     android:textOn="@string/send_continue_off"
                     android:textOff="@string/send_continue"
                     android:contentDescription="@string/send_continue" />

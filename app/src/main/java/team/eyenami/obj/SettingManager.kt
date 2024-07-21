@@ -51,8 +51,9 @@ object SettingManager {
         return settingDBM.deletionCount
     }
 
-    fun setDetectionCount(count : Int)  {
+    fun setDetectionCount(count : Int)  = CoroutineScope(Dispatchers.IO).launch {
         settingDBM.deletionCount = count
+        db.settingDao().update(settingDBM)
     }
 
     fun getDetectionCountMS(): Long {
