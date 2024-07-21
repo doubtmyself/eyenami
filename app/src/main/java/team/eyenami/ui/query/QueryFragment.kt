@@ -35,6 +35,9 @@ import com.google.ai.client.generativeai.type.SafetySetting
 import com.google.ai.client.generativeai.type.content
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import team.eyenami.obj.SettingManager
 import team.eyenami.utills.AIResponse
@@ -97,11 +100,10 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
     
     항상 이 형식을 따라 응답하세요. 추가 정보나 설명이 필요하면 description 내에서 간결하게 제공하세요.
     """
-    private lateinit var handler: Handler
-    private lateinit var runnable: Runnable
+    private var photoJob: Job? = null
 
     private lateinit var tts: TextToSpeech
-    private lateinit var ttsSpeed: TextToSpeech
+//    private lateinit var ttsSpeed: TextToSpeech
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -153,25 +155,19 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
             }
         })
 
-        ttsSpeed = TextToSpeech(activity, TextToSpeech.OnInitListener { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                val result = tts.setLanguage(Util.getSystemLanguage())
-                tts.setSpeechRate(2.0f) // 음성 속도를 2배로 설정
-                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    Timber.e("TTS: Language is not supported")
-                }
-            } else {
-                Timber.e("TTS: Initialization failed")
-            }
-        })
+//        ttsSpeed = TextToSpeech(activity, TextToSpeech.OnInitListener { status ->
+//            if (status == TextToSpeech.SUCCESS) {
+//                val result = tts.setLanguage(Util.getSystemLanguage())
+//                tts.setSpeechRate(2.0f) // 음성 속도를 2배로 설정
+//                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+//                    Timber.e("TTS: Language is not supported")
+//                }
+//            } else {
+//                Timber.e("TTS: Initialization failed")
+//            }
+//        })
 
-        handler = Handler(Looper.getMainLooper())
-        runnable = object : Runnable {
-            override fun run() {
-                takePhoto()
-                handler.postDelayed(this, SettingManager.getDetectionCountMS())
-            }
-        }
+
     }
 
     private fun addListener() {
@@ -182,9 +178,19 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
 
         binding.btnQueryContinue.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                handler.post(runnable) // Handler 실행 시작
+                startPhotoJob()
             } else {
-                handler.removeCallbacks(runnable) // Handler 실행 중지
+                photoJob?.cancel() // Coroutine 작업 중지
+            }
+        }
+    }
+
+    private fun startPhotoJob() {
+        photoJob?.cancel()
+        photoJob = lifecycleScope.launch {
+            while (isActive) {
+                takePhoto()
+                delay(SettingManager.getDetectionCountMS()) // 작업을 반복할 간격을 설정 (예: 1초)
             }
         }
     }
@@ -199,6 +205,8 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
             try {
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(this, cameraSelector, imageCapture)
+                binding.btnQuery.isEnabled = true
+                binding.btnQueryContinue.isEnabled = true
             } catch (exc: Exception) {
                 Timber.e("Use case binding failed", exc)
             }
@@ -230,6 +238,18 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
                     }
                 }
             })
+    }
+
+    override fun onPause() {
+        super.onPause()
+        photoJob?.cancel() // onPause 시 Coroutine 작업 중지
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (binding.btnQueryContinue.isChecked) {
+            startPhotoJob() // onResume 시 Coroutine 작업 재개
+        }
     }
 
     private fun preprocessImage(bitmap: Bitmap): Bitmap {
