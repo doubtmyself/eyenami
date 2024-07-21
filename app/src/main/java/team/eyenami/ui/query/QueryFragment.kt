@@ -105,14 +105,26 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
     private var photoJob: Job? = null
 
     private lateinit var tts: TextToSpeech
-//    private lateinit var ttsSpeed: TextToSpeech
+
+    private var setUpFlag = false
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setUp()
+    }
+
+    @Synchronized
+    private fun setUp(){
+        if(setUpFlag){
+            return
+        }
+
         if (allPermissionsGranted()) {
             initialize()
             addListener()
             setupCamera()
+            setUpFlag = true
         } else {
             requestPermissions()
         }
@@ -249,6 +261,8 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
 
     override fun onResume() {
         super.onResume()
+        setUp()
+
         if (binding.btnQueryContinue.isChecked) {
             startPhotoJob() // onResume 시 Coroutine 작업 재개
         }
@@ -310,7 +324,7 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
                 tts.speak(category.response.description, TextToSpeech.QUEUE_FLUSH, null, null)
             }
             "INFO" -> {
-                tts.setSpeechRate(1.0f)
+                tts.setSpeechRate(2.0f)
                 tts.speak(category.response.description, TextToSpeech.QUEUE_FLUSH, null, null)
             }
             "GUIDE" -> {
