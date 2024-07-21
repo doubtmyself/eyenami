@@ -24,6 +24,12 @@ googleAndroidLibrariesMapsplatformSecretsGradlePlugin = "2.0.1"
 common = "0.9.0"
 
 
+okhttp = "4.11.0"
+gson = "2.10.1"
+
+#tts = "1.0.7"
+
+
 [libraries]
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCore" }
 androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "cameraCore" }
@@ -49,6 +55,10 @@ viewbinding-property-delegate-full = { group = "com.github.kirich1409", name = "
 viewbinding-property-delegate-noreflection = { group = "com.github.kirich1409", name = "viewbindingpropertydelegate-noreflection", version.ref = "viewBindingPropertyDelegate" }
 generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai" }
 common = { group = "com.google.ai.client.generativeai", name = "common", version.ref = "common" }
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+#tts = { group = "com.google.android.tts", name = "speech-tts", version.ref = "tts" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

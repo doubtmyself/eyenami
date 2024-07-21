@@ -1,4 +1,4 @@
-package team.eyenami.define
+package team.eyenami.utills
 
 enum class SettingProp {
     VIBRATERUN

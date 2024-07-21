@@ -37,10 +37,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
+                android:gravity="center"
                 android:padding="8dp">
 
             <EditText
-                    android:id="@+id/ETxtMessage"
+                    android:id="@+id/txt_message"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -50,11 +51,18 @@
                     android:minHeight="48dp" />
 
             <Button
-                    android:id="@+id/BtnQuery"
+                    android:id="@+id/btn_query"
                     android:layout_width="wrap_content"
-                    android:layout_height="48dp"
+                    android:layout_height="60dp"
                     android:text="@string/send"
-                    android:contentDescription="Send message" />
+                    android:contentDescription="@string/send" />
+            <ToggleButton
+                    android:id="@+id/btn_query_continue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="60dp"
+                    android:textOn="@string/send_continue_off"
+                    android:textOff="@string/send_continue"
+                    android:contentDescription="@string/send_continue" />
         </LinearLayout>
 
     </com.google.android.material.bottomappbar.BottomAppBar>

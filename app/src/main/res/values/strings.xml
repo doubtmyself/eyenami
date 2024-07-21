@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">eyenami</string>
     <string name="send">Send</string>
+    <string name="send_continue">Send\ncontinue</string>
+    <string name="send_continue_off">Send\ncontinue off</string>
     <string name="query">Query</string>
     <string name="setting">Setting</string>
     <string name="vibration">Vibration</string>

@@ -20,17 +20,28 @@ import org.json.JSONObject
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Environment
+import android.speech.tts.TextToSpeech
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.ai.client.generativeai.Chat
 import com.google.ai.client.generativeai.type.BlockThreshold
 import com.google.ai.client.generativeai.type.HarmCategory
 import com.google.ai.client.generativeai.type.SafetySetting
 import com.google.ai.client.generativeai.type.content
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
+import team.eyenami.obj.SettingManager
+import team.eyenami.utills.Util
 import java.io.File
+import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -39,15 +50,22 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
     private val binding by viewBinding(FragmentQueryBinding::bind)
     private lateinit var chatAdapter: ChatAdapter
     private val model = GenerativeModel(
-        "gemini-1.5-pro",
+        "gemini-1.5-flash",
         // Retrieve API key as an environmental variable defined in a Build Configuration
         // see https://github.com/google/secrets-gradle-plugin for further instructions
         BuildConfig.apiKey,
+//        generationConfig = generationConfig {
+//            temperature = 1f
+//            topK = 64
+//            topP = 0.95f
+//            maxOutputTokens = 8192
+//            responseMimeType = "application/json"
+//        },
         generationConfig = generationConfig {
-            temperature = 1f
-            topK = 64
-            topP = 0.95f
-            maxOutputTokens = 8192
+            temperature = 0.7f  // 낮은 temperature 값
+            topK = 32  // 낮은 topK 값
+            topP = 0.9f  // 낮은 topP 값
+            maxOutputTokens = 512  // 최대 출력 토큰 수 줄임
             responseMimeType = "application/json"
         },
         safetySettings = listOf(
@@ -57,43 +75,45 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
             SafetySetting(HarmCategory.DANGEROUS_CONTENT, BlockThreshold.MEDIUM_AND_ABOVE)
         )
     )
-    val chatHistory = listOf<Content>()
-    val chat = model.startChat(chatHistory)
-
     private lateinit var imageCapture: ImageCapture
     private lateinit var cameraExecutor: ExecutorService
 
-    val initialPrompt = """
-    당신은 시각장애인을 위한 AI 도우미입니다. 모든 응답은 반드시 다음 JSON 형식을 정확히 따라야 합니다:
-    {"response": {"category": "DANGER" | "INFO" | "GUIDE", "description": "간단한 설명"}}
-    
-    카테고리는 다음과 같이 사용하세요:
-    1. DANGER: 즉각적인 위험 상황 (예: 장애물, 계단, 차량 등)
-    2. INFO: 일반적인 환경 정보 (예: 방의 구조, 주변 물체 등)
-    3. GUIDE: 방향 안내 (예: 문의 위치, 안전한 경로 등)
-    
-    설명은 항상 간결하고 명확해야 하며, 50자 이내로 제한하세요.
-    
-    다음은 올바른 응답의 예시입니다:
-    
-    1. 이미지: 바닥에 물웅덩이가 있는 복도
-       응답: {"response": {"category": "DANGER", "description": "바닥에 물웅덩이, 미끄러질 위험"}}
-    
-    2. 이미지: 책상 위에 컴퓨터와 책들이 있는 사무실
-       응답: {"response": {"category": "INFO", "description": "사무실 환경, 책상에 컴퓨터와 책이 있음"}}
-    
-    3. 이미지: 왼쪽에 출구 표지판이 보이는 복도
-       응답: {"response": {"category": "GUIDE", "description": "왼쪽으로 10미터 지점에 출구 있음"}}
-    
-    항상 이 형식을 따라 응답하세요. 추가 정보나 설명이 필요하면 description 내에서 간결하게 제공하세요.
-    """
+    private val initializationPrompt = """
+AI for visually impaired. Follow these rules:
+1. Analyze images for crucial info for blind users.
+2. Categorize as:
+   - DANGER: Immediate risks or threats (e.g., obstacles, stairs, moving vehicles)
+   - INFO: General environmental information or situation descriptions
+   - GUIDE: Directional guidance or action instructions
+3. Max 50 char descriptions.
+4. JSON format:
+   {"response":{"category":"CATEGORY","description":"DESCRIPTION"}}
+5. Use ${Util.getSystemLanguage()} language.
+6. Focus on safety and independence.
+Analyze image and respond per rules.
+Confirm: "Rules accepted."
+""".trimIndent()
+    private lateinit var wkJob: Job
+
+    private lateinit var tts: TextToSpeech
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (allPermissionsGranted()) {
+
             initialize()
             addListener()
             setupCamera()
+            tts = TextToSpeech(activity, TextToSpeech.OnInitListener { status ->
+                if (status == TextToSpeech.SUCCESS) {
+                    val result = tts.setLanguage(Util.getSystemLanguage())
+                    if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        Timber.e("TTS: Language is not supported")
+                    }
+                } else {
+                    Timber.e("TTS: Initialization failed")
+                }
+            })
         } else {
             requestPermissions()
         }
@@ -117,20 +137,30 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
         chatAdapter = ChatAdapter()
         binding.RecyclerViewChat.adapter = chatAdapter
         cameraExecutor = Executors.newSingleThreadExecutor()
-        lifecycleScope.launch {
-            try {
-                val response = chat.sendMessage(initialPrompt)
-                Timber.d("Initial prompt response: ${response.text}")
-            } catch (e: Exception) {
-                Timber.e("Error setting initial prompt", e)
-            }
-        }
-
     }
 
     private fun addListener() {
-        binding.BtnQuery.setOnClickListener {
+
+        binding.btnQuery.setOnClickListener {
             takePhoto()
+        }
+
+        binding.btnQueryContinue.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                wkJob = lifecycleScope.launch {
+                    while (isActive) {
+                        launch {
+                            takePhoto()
+                        }
+
+                        delay(SettingManager.getDetectionCountMS()) // 작업을 반복할 간격을 설정 (예: 1초)
+                    }
+                }
+            } else {
+                if (::wkJob.isInitialized && wkJob.isActive) {
+                    wkJob.cancel()
+                }
+            }
         }
     }
 
@@ -153,7 +183,9 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
 
     private fun takePhoto() {
         Timber.d("Taking photo...")
-        val photoFile = File(requireContext().externalMediaDirs.firstOrNull(), "${System.currentTimeMillis()}.jpg")
+        val photoFile = File(
+            requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+            "${System.currentTimeMillis()}.jpg")
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
         imageCapture.takePicture(outputOptions, cameraExecutor, object : ImageCapture.OnImageSavedCallback {
@@ -170,36 +202,39 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
     }
 
     private fun processCapturedImage(bitmap: Bitmap) {
-        lifecycleScope.launch {
+        lifecycleScope.launch(Dispatchers.IO) {
             try {
                 Timber.d("Processing captured image...")
                 val response = model.generateContent(
                     content {
+                        text(initializationPrompt)
                         image(bitmap)
-                        text("이 이미지를 분석하고, 시각장애인에게 가장 중요한 정보를 제공하세요. 반드시 이전에 제공된 JSON 형식과 예시를 따라 응답하세요.")
+                        text("Analyze this image based on the rules provided above.")
                     }
                 )
-
-                response.text?.let { responseText ->
-                    Timber.d("AI response: $responseText")
-                    try {
-                        val jsonResponse = JSONObject(responseText)
-                        val responseObject = jsonResponse.optJSONObject("response")
-                        if (responseObject != null) {
-                            val category = responseObject.optString("category", "INFO")
-                            val description = responseObject.optString("description", "정보를 제공할 수 없습니다.")
-                            chatAdapter.addMessage(ChatMessage("$category: $description", true))
-                        } else {
-                            // JSON 형식이 맞지 않을 경우 전체 응답을 표시
+                withContext(Dispatchers.Main){
+                    response.text?.let { responseText ->
+                        Timber.d("AI response: $responseText")
+                        try {
+                            val jsonResponse = JSONObject(responseText)
+                            val responseObject = jsonResponse.optJSONObject("response")
+                            if (responseObject != null) {
+                                val category = responseObject.optString("category", "INFO")
+                                val description = responseObject.optString("description", "정보를 제공할 수 없습니다.")
+                                chatAdapter.addMessage(ChatMessage("$category: $description", true))
+                                tts.speak("$category: $description", TextToSpeech.QUEUE_FLUSH, null, null)
+                            } else {
+                                // JSON 형식이 맞지 않을 경우 전체 응답을 표시
+                                chatAdapter.addMessage(ChatMessage("INFO: $responseText", true))
+                            }
+                        } catch (e: Exception) {
+                            Timber.e("Error parsing JSON response: ${e.message}")
                             chatAdapter.addMessage(ChatMessage("INFO: $responseText", true))
                         }
-                    } catch (e: Exception) {
-                        Timber.e("Error parsing JSON response: ${e.message}")
-                        chatAdapter.addMessage(ChatMessage("INFO: $responseText", true))
+                    } ?: run {
+                        Timber.e("Empty response from AI")
+                        chatAdapter.addMessage(ChatMessage("AI로부터 빈 응답을 받았습니다.", true))
                     }
-                } ?: run {
-                    Timber.e("Empty response from AI")
-                    chatAdapter.addMessage(ChatMessage("AI로부터 빈 응답을 받았습니다.", true))
                 }
             } catch (e: Exception) {
                 Timber.e("Error generating content from image: ${e.message}")

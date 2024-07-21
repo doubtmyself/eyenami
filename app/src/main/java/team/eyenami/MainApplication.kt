@@ -2,10 +2,14 @@ package team.eyenami
 
 import android.app.Application
 import android.content.Context
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import team.eyenami.helper.TimberDebugTree
 import team.eyenami.obj.PropertiesChangeListener
 import team.eyenami.obj.PropertiesChangeMessage
 import team.eyenami.obj.SettingManager
+import team.eyenami.utills.Util
 import timber.log.Timber
 
 
@@ -26,6 +30,10 @@ class MainApplication : Application(), PropertiesChangeListener {
 
         addListener()
         Timber.e("앱 시작")
+//        CoroutineScope(Dispatchers.IO).launch {
+//            Util.getAbleModelList()
+//        }
+
 
     }
 

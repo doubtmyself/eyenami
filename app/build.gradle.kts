@@ -79,4 +79,15 @@ dependencies {
 
     //ai
     implementation(libs.generativeai)
+
+    //http
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging.interceptor)
+
+    //gson
+    implementation(libs.gson)
+
+    // tts
+//    implementation(libs.tts)
+
 }
