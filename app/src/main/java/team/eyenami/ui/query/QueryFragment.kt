@@ -38,6 +38,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import team.eyenami.obj.SettingManager
 import team.eyenami.utills.AIResponse
@@ -257,43 +259,46 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
         val scaledBitmap = Bitmap.createScaledBitmap(bitmap, targetSize, targetSize, true)
         return scaledBitmap
     }
-
+    private val mutex = Mutex()
     private suspend fun processCapturedImage(bitmap: Bitmap) {
         val preprocessedImage = preprocessImage(bitmap)
-        try {
-            Timber.d("Processing captured image...")
-            val response = chat.sendMessage(
-                content {
-                    image(preprocessedImage)
-                    text("이 이미지를 분석하고, 시각장애인에게 가장 중요한 정보를 제공하세요. 반드시 이전에 제공된 JSON 형식과 예시를 따라 응답하세요.")
-                }
-            )
-            response.text?.let { responseText ->
-                Timber.d("AI response: $responseText")
-                try {
-                    val aiResponse = gson.fromJson(responseText, AIResponse::class.java)
-                    val category = aiResponse.response.category
-                    val description = aiResponse.response.description
-                    withContext(Dispatchers.Main) {
-                        chatAdapter.addMessage(ChatMessage("$category: $description", true))
-                        speakTTS(aiResponse)
+        mutex.withLock {
+            try {
+                Timber.d("Processing captured image...")
+                val response = chat.sendMessage(
+                    content {
+                        image(preprocessedImage)
+                        text("이 이미지를 분석하고, 시각장애인에게 가장 중요한 정보를 제공하세요. 반드시 이전에 제공된 JSON 형식과 예시를 따라 응답하세요.")
                     }
-                } catch (e: Exception) {
-                    Timber.e("Error parsing JSON response: ${e.message}")
+                )
+
+                response.text?.let { responseText ->
+                    Timber.d("AI response: $responseText")
+                    try {
+                        val aiResponse = gson.fromJson(responseText, AIResponse::class.java)
+                        val category = aiResponse.response.category
+                        val description = aiResponse.response.description
+                        withContext(Dispatchers.Main) {
+                            chatAdapter.addMessage(ChatMessage("$category: $description", true))
+                            speakTTS(aiResponse)
+                        }
+                    } catch (e: Exception) {
+                        Timber.e("Error parsing JSON response: ${e.message}")
+                        withContext(Dispatchers.Main) {
+                            chatAdapter.addMessage(ChatMessage("INFO: $responseText", true))
+                        }
+                    }
+                } ?: run {
+                    Timber.e("Empty response from AI")
                     withContext(Dispatchers.Main) {
-                        chatAdapter.addMessage(ChatMessage("INFO: $responseText", true))
+                        chatAdapter.addMessage(ChatMessage("AI로부터 빈 응답을 받았습니다.", true))
                     }
                 }
-            } ?: run {
-                Timber.e("Empty response from AI")
+            } catch (e: Exception) {
+                Timber.e("Error generating content from image: ${e.message}")
                 withContext(Dispatchers.Main) {
-                    chatAdapter.addMessage(ChatMessage("AI로부터 빈 응답을 받았습니다.", true))
+                    chatAdapter.addMessage(ChatMessage("이미지 처리 중 오류: ${e.message}", true))
                 }
-            }
-        } catch (e: Exception) {
-            Timber.e("Error generating content from image: ${e.message}")
-            withContext(Dispatchers.Main) {
-                chatAdapter.addMessage(ChatMessage("이미지 처리 중 오류: ${e.message}", true))
             }
         }
     }
