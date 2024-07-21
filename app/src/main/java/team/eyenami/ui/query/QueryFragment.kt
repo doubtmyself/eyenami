@@ -55,10 +55,10 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
         // see https://github.com/google/secrets-gradle-plugin for further instructions
         BuildConfig.apiKey,
         generationConfig = generationConfig {
-            temperature = 1f
-            topK = 64
-            topP = 0.95f
-            maxOutputTokens = 8192
+            temperature = 0.4f
+            topK = 40
+            topP = 0.9f
+            maxOutputTokens = 300
             responseMimeType = "application/json"
         },
         safetySettings = listOf(
@@ -68,13 +68,13 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
             SafetySetting(HarmCategory.DANGEROUS_CONTENT, BlockThreshold.MEDIUM_AND_ABOVE)
         )
     )
-    val chatHistory = listOf<Content>()
-    val chat = model.startChat(chatHistory)
+    private val chatHistory = listOf<Content>()
+    private val chat = model.startChat(chatHistory)
 
     private lateinit var imageCapture: ImageCapture
     private lateinit var cameraExecutor: ExecutorService
 
-    val initialPrompt = """
+    private val initialPrompt = """
     당신은 시각장애인을 위한 AI 도우미입니다. 모든 응답은 반드시 다음 JSON 형식을 정확히 따라야 합니다:
     {"response": {"category": "DANGER" | "INFO" | "GUIDE", "description": "간단한 설명"}}
     
@@ -214,12 +214,19 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
         })
     }
 
+    private fun preprocessImage(bitmap: Bitmap): Bitmap {
+        val targetSize = 512
+        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, targetSize, targetSize, true)
+        return scaledBitmap
+    }
+
     private suspend fun processCapturedImage(bitmap: Bitmap) {
+        val preprocessedImage = preprocessImage(bitmap)
         try {
             Timber.d("Processing captured image...")
             val response = chat.sendMessage(
                 content {
-                    image(bitmap)
+                    image(preprocessedImage)
                     text("이 이미지를 분석하고, 시각장애인에게 가장 중요한 정보를 제공하세요. 반드시 이전에 제공된 JSON 형식과 예시를 따라 응답하세요.")
                 }
             )
