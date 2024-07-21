@@ -21,6 +21,8 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.speech.tts.TextToSpeech
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -96,7 +98,8 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
     
     항상 이 형식을 따라 응답하세요. 추가 정보나 설명이 필요하면 description 내에서 간결하게 제공하세요.
     """
-    private lateinit var wkJob: Job
+    private lateinit var handler: Handler
+    private lateinit var runnable: Runnable
 
     private lateinit var tts: TextToSpeech
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -147,6 +150,14 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
                 Timber.e("TTS: Initialization failed")
             }
         })
+
+        handler = Handler(Looper.getMainLooper())
+        runnable = object : Runnable {
+            override fun run() {
+                takePhoto()
+                handler.postDelayed(this, SettingManager.getDetectionCountMS())
+            }
+        }
     }
 
     private fun addListener() {
@@ -157,19 +168,9 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
 
         binding.btnQueryContinue.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                wkJob = lifecycleScope.launch(Dispatchers.IO) {
-                    while (isActive) {
-                        launch {
-                            takePhoto()
-                        }
-
-                        delay(SettingManager.getDetectionCountMS()) // 작업을 반복할 간격을 설정 (예: 1초)
-                    }
-                }
+                handler.post(runnable) // Handler 실행 시작
             } else {
-                if (::wkJob.isInitialized && wkJob.isActive) {
-                    wkJob.cancel()
-                }
+                handler.removeCallbacks(runnable) // Handler 실행 중지
             }
         }
     }
@@ -204,9 +205,9 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
             }
 
             override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
-                val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
                 lifecycleScope.launch(Dispatchers.IO){
+                    val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
+                    val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
                     processCapturedImage(bitmap)
                 }
             }
