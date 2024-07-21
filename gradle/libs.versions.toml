@@ -23,6 +23,7 @@ generativeai = "0.9.0"
 googleAndroidLibrariesMapsplatformSecretsGradlePlugin = "2.0.1"
 common = "0.9.0"
 
+gson = "2.10.1"
 
 [libraries]
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCore" }
@@ -49,7 +50,7 @@ viewbinding-property-delegate-full = { group = "com.github.kirich1409", name = "
 viewbinding-property-delegate-noreflection = { group = "com.github.kirich1409", name = "viewbindingpropertydelegate-noreflection", version.ref = "viewBindingPropertyDelegate" }
 generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai" }
 common = { group = "com.google.ai.client.generativeai", name = "common", version.ref = "common" }
-
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

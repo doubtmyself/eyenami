@@ -6,3 +6,12 @@ enum class SettingProp {
 
 
 
+
+data class AIResponse(
+    val response: Response
+)
+
+data class Response(
+    val category: String,
+    val description: String
+)

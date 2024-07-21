@@ -15,7 +15,6 @@ import team.eyenami.R
 import team.eyenami.databinding.FragmentQueryBinding
 import timber.log.Timber
 import com.google.ai.client.generativeai.type.generationConfig
-import org.json.JSONObject
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -34,12 +33,11 @@ import com.google.ai.client.generativeai.type.BlockThreshold
 import com.google.ai.client.generativeai.type.HarmCategory
 import com.google.ai.client.generativeai.type.SafetySetting
 import com.google.ai.client.generativeai.type.content
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import team.eyenami.obj.SettingManager
+import team.eyenami.utills.AIResponse
 import team.eyenami.utills.Util
 import java.io.File
 import java.util.concurrent.ExecutorService
@@ -49,6 +47,7 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
 
     private val binding by viewBinding(FragmentQueryBinding::bind)
     private lateinit var chatAdapter: ChatAdapter
+    private val gson = Gson()
     private val model = GenerativeModel(
         "gemini-1.5-pro",
         // Retrieve API key as an environmental variable defined in a Build Configuration
@@ -102,6 +101,8 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
     private lateinit var runnable: Runnable
 
     private lateinit var tts: TextToSpeech
+    private lateinit var ttsSpeed: TextToSpeech
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (allPermissionsGranted()) {
@@ -124,7 +125,8 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
 
     private fun requestPermissions() {
         ActivityCompat.requestPermissions(
-            requireActivity(), REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
+            requireActivity(), REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
+        )
     }
 
     private fun initialize() {
@@ -143,6 +145,18 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
         tts = TextToSpeech(activity, TextToSpeech.OnInitListener { status ->
             if (status == TextToSpeech.SUCCESS) {
                 val result = tts.setLanguage(Util.getSystemLanguage())
+                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    Timber.e("TTS: Language is not supported")
+                }
+            } else {
+                Timber.e("TTS: Initialization failed")
+            }
+        })
+
+        ttsSpeed = TextToSpeech(activity, TextToSpeech.OnInitListener { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                val result = tts.setLanguage(Util.getSystemLanguage())
+                tts.setSpeechRate(2.0f) // 음성 속도를 2배로 설정
                 if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                     Timber.e("TTS: Language is not supported")
                 }
@@ -196,22 +210,26 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
         Timber.d("Taking photo...")
         val photoFile = File(
             requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-            "${System.currentTimeMillis()}.jpg")
+            "${System.currentTimeMillis()}.jpg"
+        )
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
-        imageCapture.takePicture(outputOptions, cameraExecutor, object : ImageCapture.OnImageSavedCallback {
-            override fun onError(exc: ImageCaptureException) {
-                Timber.e("Photo capture failed: ${exc.message}", exc)
-            }
-
-            override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                lifecycleScope.launch(Dispatchers.IO){
-                    val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
-                    val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
-                    processCapturedImage(bitmap)
+        imageCapture.takePicture(
+            outputOptions,
+            cameraExecutor,
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onError(exc: ImageCaptureException) {
+                    Timber.e("Photo capture failed: ${exc.message}", exc)
                 }
-            }
-        })
+
+                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
+                        val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
+                        processCapturedImage(bitmap)
+                    }
+                }
+            })
     }
 
     private suspend fun processCapturedImage(bitmap: Bitmap) {
@@ -223,41 +241,58 @@ class QueryFragment : Fragment(R.layout.fragment_query) {
                     text("이 이미지를 분석하고, 시각장애인에게 가장 중요한 정보를 제공하세요. 반드시 이전에 제공된 JSON 형식과 예시를 따라 응답하세요.")
                 }
             )
-//            withContext(Dispatchers.Main) {
-                response.text?.let { responseText ->
-                    Timber.d("AI response: $responseText")
-                    try {
-                        val jsonResponse = JSONObject(responseText)
-                        val responseObject = jsonResponse.optJSONObject("response")
-                        if (responseObject != null) {
-                            val category = responseObject.optString("category", "INFO")
-                            val description =
-                                responseObject.optString("description", "정보를 제공할 수 없습니다.")
-                            chatAdapter.addMessage(ChatMessage("$category: $description", true))
-                            tts.speak(
-                                "$category: $description",
-                                TextToSpeech.QUEUE_FLUSH,
-                                null,
-                                null
-                            )
-                        } else {
-                            // JSON 형식이 맞지 않을 경우 전체 응답을 표시
-                            chatAdapter.addMessage(ChatMessage("INFO: $responseText", true))
-                        }
-                    } catch (e: Exception) {
-                        Timber.e("Error parsing JSON response: ${e.message}")
+            response.text?.let { responseText ->
+                Timber.d("AI response: $responseText")
+                try {
+                    val aiResponse = gson.fromJson(responseText, AIResponse::class.java)
+                    val category = aiResponse.response.category
+                    val description = aiResponse.response.description
+                    withContext(Dispatchers.Main) {
+                        chatAdapter.addMessage(ChatMessage("$category: $description", true))
+                        speakTTS(aiResponse)
+                    }
+                } catch (e: Exception) {
+                    Timber.e("Error parsing JSON response: ${e.message}")
+                    withContext(Dispatchers.Main) {
                         chatAdapter.addMessage(ChatMessage("INFO: $responseText", true))
                     }
-                } ?: run {
-                    Timber.e("Empty response from AI")
+                }
+            } ?: run {
+                Timber.e("Empty response from AI")
+                withContext(Dispatchers.Main) {
                     chatAdapter.addMessage(ChatMessage("AI로부터 빈 응답을 받았습니다.", true))
                 }
-//            }
+            }
         } catch (e: Exception) {
             Timber.e("Error generating content from image: ${e.message}")
-            chatAdapter.addMessage(ChatMessage("이미지 처리 중 오류: ${e.message}", true))
+            withContext(Dispatchers.Main) {
+                chatAdapter.addMessage(ChatMessage("이미지 처리 중 오류: ${e.message}", true))
+            }
         }
     }
+
+    private fun speakTTS(category: AIResponse) {
+        when (category.response.category) {
+            "DANGER" -> {
+                tts.setSpeechRate(2.0f)
+                tts.speak(category.response.description, TextToSpeech.QUEUE_FLUSH, null, null)
+            }
+            "INFO" -> {
+                tts.setSpeechRate(1.0f)
+                tts.speak(category.response.description, TextToSpeech.QUEUE_FLUSH, null, null)
+            }
+            "GUIDE" -> {
+                tts.setSpeechRate(1.0f)
+                tts.speak(category.response.description, TextToSpeech.QUEUE_FLUSH, null, null)
+            }
+            else -> {
+                tts.setSpeechRate(1.0f)
+                tts.speak(category.response.description, TextToSpeech.QUEUE_FLUSH, null, null)
+            }
+        }
+
+    }
+
 
 
     override fun onDestroyView() {

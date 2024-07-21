@@ -79,4 +79,7 @@ dependencies {
 
     //ai
     implementation(libs.generativeai)
+
+    //gson
+    implementation(libs.gson)
 }
