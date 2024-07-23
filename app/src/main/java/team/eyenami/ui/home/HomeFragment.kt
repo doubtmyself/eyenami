@@ -369,13 +369,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         startAnimator = ValueAnimator.ofFloat(startScale, endScale).apply {
             addUpdateListener { animator ->
                 val scale = animator.animatedValue as Float
-                binding?.aniWave?.scaleY = scale
+                binding.aniWave.scaleY = scale
             }
             interpolator = AccelerateDecelerateInterpolator()
             this.duration = duration
             // 애니메이션이 끝난 후 필요한 작업이 있다면 여기에 추가
-            binding?.aniWave?.playAnimation() // Lottie 애니메이션 시작
-            binding?.aniWave?.visibility = View.VISIBLE
+            binding.aniWave.playAnimation() // Lottie 애니메이션 시작
+            binding.aniWave.visibility = View.VISIBLE
             start()
         }
 
@@ -392,13 +392,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         stopAnimator = ValueAnimator.ofFloat(startScale, endScale).apply {
             addUpdateListener { animator ->
                 val scale = animator.animatedValue as Float
-                binding?.aniWave?.scaleY = scale
+                binding.aniWave.scaleY = scale
             }
             interpolator = AccelerateDecelerateInterpolator()
             this.duration = duration
             doOnEnd {
-                binding?.aniWave?.cancelAnimation()
-                binding?.aniWave?.visibility = View.GONE
+                binding.aniWave.cancelAnimation()
+                binding.aniWave.visibility = View.GONE
             }
             start()
         }
