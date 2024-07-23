@@ -111,7 +111,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     
     3. Image: A corridor with an exit sign visible on the left
        Response: {"response": {"category": "GUIDE", "description": "Exit 10 meters to the left"}}
-    
+     4. JSON format:
+       {"response":{"category":"CATEGORY","description":"DESCRIPTION"}}
+    5. Use ${Util.getSystemLanguage()} language.
+    6. Focus on safety and independence.
     Always respond using this format. If additional information or explanation is needed, provide it concisely within the description.
     """.trimIndent()
     private var photoJob: Job? = null
