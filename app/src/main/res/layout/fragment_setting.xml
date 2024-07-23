@@ -14,13 +14,6 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-
-            <include
-                    android:id="@+id/item_vibration"
-                    layout="@layout/item_switch"
-                    app:argTextTitle="@{@string/vibration}"
-                    app:argTextContent="@{@string/vibration_hint}" />
-
             <View
                     android:id="@+id/view_line"
                     android:layout_width="match_parent"
@@ -30,6 +23,7 @@
             <include
                     android:id="@+id/item_detection_count"
                     layout="@layout/item_number"
+
                     app:argTextTitle="@{@string/detection_count}"
                     app:argTextContent="@{@string/detection_count_hint}" />
         </LinearLayout>
