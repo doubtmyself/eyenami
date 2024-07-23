@@ -91,37 +91,32 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private lateinit var cameraExecutor: ExecutorService
 
     private val initialPrompt= """
-    You are an AI assistant for the visually impaired. All responses must strictly follow this JSON format:
-    {"response": {"category": "DANGER" | "INFO" | "GUIDE", "description": "brief description"}}
-    
-    Use the categories as follows:
-    1. DANGER: Immediate danger situations (e.g., obstacles, stairs, vehicles, etc.)
-    2. INFO: General environmental information (e.g., room layout, surrounding objects, etc.)
-    3. GUIDE: Directional guidance (e.g., location of doors, safe routes, etc.)
-    
-    The description should always be concise and clear, limited to 50 characters or less.
-    
-    Here are examples of correct responses:
-    
-    1. Image: A corridor with a puddle of water on the floor
-       Response: {"response": {"category": "DANGER", "description": "Water puddle on floor, slip hazard"}}
-    
-    2. Image: An office with a computer and books on a desk
-       Response: {"response": {"category": "INFO", "description": "Office environment, desk with computer and books"}}
-    
-    3. Image: A corridor with an exit sign visible on the left
-       Response: {"response": {"category": "GUIDE", "description": "Exit 10 meters to the left"}}
-     4. JSON format:
+    AI for visually impaired. Follow these rules:
+    1. Analyze images for crucial info for blind users.
+    2. Categorize as:
+       - DANGER: Immediate risks or threats (e.g., obstacles, stairs, moving vehicles)
+       - INFO: General environmental information or situation descriptions
+       - GUIDE: Directional guidance or action instructions
+    3. Max 50 char descriptions.
+    4. JSON format:
        {"response":{"category":"CATEGORY","description":"DESCRIPTION"}}
     5. Use ${Util.getSystemLanguage()} language.
     6. Focus on safety and independence.
+    
+    Here are examples of correct responses:
+    1. Image: A corridor with a puddle of water on the floor
+       Response: {"response": {"category": "DANGER", "description": "Water puddle on floor, slip hazard"}}
+    2. Image: An office with a computer and books on a desk
+       Response: {"response": {"category": "INFO", "description": "Office environment, desk with computer and books"}}
+    3. Image: A corridor with an exit sign visible on the left
+       Response: {"response": {"category": "GUIDE", "description": "Exit 10 meters to the left"}}
     Always respond using this format. If additional information or explanation is needed, provide it concisely within the description.
     """.trimIndent()
     private var photoJob: Job? = null
 
     private lateinit var tts: TextToSpeech
 
-    private var setUpFlag = false
+//    private var setUpFlag = false
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -131,15 +126,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     @Synchronized
     private fun setUp() {
-        if (setUpFlag) {
-            return
-        }
-
         if (allPermissionsGranted()) {
             initialize()
             addListener()
             setupCamera()
-            setUpFlag = true
         } else {
             requestPermissions()
         }
@@ -374,18 +364,22 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val endScale = 0.1f
         // 애니메이션 지속 시간 (밀리초)
         val duration = 1000L
-        ValueAnimator.ofFloat(startScale, endScale).apply {
-            addUpdateListener { animator ->
-                val scale = animator.animatedValue as Float
-                binding.aniWave.scaleY = scale
+        try{
+            ValueAnimator.ofFloat(startScale, endScale).apply {
+                addUpdateListener { animator ->
+                    val scale = animator.animatedValue as Float
+                    binding.aniWave.scaleY = scale
+                }
+                interpolator = AccelerateDecelerateInterpolator()
+                this.duration = duration
+                doOnEnd {
+                    binding.aniWave.cancelAnimation()
+                    binding.aniWave.visibility = View.GONE
+                }
+                start()
             }
-            interpolator = AccelerateDecelerateInterpolator()
-            this.duration = duration
-            doOnEnd {
-                binding.aniWave.cancelAnimation()
-                binding.aniWave.visibility = View.GONE
-            }
-            start()
+        } catch (_: Exception) {
+
         }
 
     }
