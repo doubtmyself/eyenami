@@ -90,7 +90,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private lateinit var imageCapture: ImageCapture
     private lateinit var cameraExecutor: ExecutorService
 
-    private val initialPrompt= """
+    private val initialPrompt = """
     AI for visually impaired. Follow these rules:
     1. Analyze images for crucial info for blind users.
     2. Categorize as:
@@ -164,11 +164,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun addListener() {
         binding.root.setOnClickListener {
-            if(!binding.circularProgressBar.indeterminateMode){
+            if (!binding.circularProgressBar.indeterminateMode) {
                 binding.circularProgressBar.indeterminateMode = true
                 binding.aniWave.repeatCount = LottieDrawable.INFINITE
                 startPhotoJob()
-            }else{
+            } else {
                 binding.circularProgressBar.indeterminateMode = false
                 photoJob?.cancel() // Coroutine 작업 중지
             }
@@ -177,9 +177,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String) {
                 // TTS 발화 시작
-               lifecycleScope.launch(Dispatchers.Main){
-                   startVoice()
-               }
+                lifecycleScope.launch(Dispatchers.Main) {
+                    startVoice()
+                }
             }
 
             override fun onDone(utteranceId: String) {
@@ -194,7 +194,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             }
         })
     }
-
 
 
     @Synchronized
@@ -255,6 +254,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     override fun onPause() {
         super.onPause()
         photoJob?.cancel() // onPause 시 Coroutine 작업 중지
+        startAnimator?.cancel()
+        stopAnimator?.cancel()
     }
 
     override fun onResume() {
@@ -317,74 +318,92 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         when (category.response.category) {
             "DANGER" -> {
                 tts.setSpeechRate(2.0f)
-                tts.speak(category.response.description, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
+                tts.speak(
+                    category.response.description,
+                    TextToSpeech.QUEUE_FLUSH,
+                    null,
+                    utteranceId
+                )
             }
 
             "INFO" -> {
                 tts.setSpeechRate(2.0f)
-                tts.speak(category.response.description, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
+                tts.speak(
+                    category.response.description,
+                    TextToSpeech.QUEUE_FLUSH,
+                    null,
+                    utteranceId
+                )
             }
 
             "GUIDE" -> {
                 tts.setSpeechRate(1.0f)
-                tts.speak(category.response.description, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
+                tts.speak(
+                    category.response.description,
+                    TextToSpeech.QUEUE_FLUSH,
+                    null,
+                    utteranceId
+                )
             }
 
             else -> {
                 tts.setSpeechRate(1.0f)
-                tts.speak(category.response.description, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
+                tts.speak(
+                    category.response.description,
+                    TextToSpeech.QUEUE_FLUSH,
+                    null,
+                    utteranceId
+                )
             }
         }
 
     }
 
+    private var startAnimator: ValueAnimator? = null;
     private fun startVoice() {
         val startScale = 0.1f
         // 종료 스케일 (1f는 원래 크기)
         val endScale = 1f
         // 애니메이션 지속 시간 (밀리초)
         val duration = 1000L
-        ValueAnimator.ofFloat(startScale, endScale).apply {
+        startAnimator = ValueAnimator.ofFloat(startScale, endScale).apply {
             addUpdateListener { animator ->
                 val scale = animator.animatedValue as Float
-                binding.aniWave.scaleY = scale
+                binding?.aniWave?.scaleY = scale
             }
             interpolator = AccelerateDecelerateInterpolator()
             this.duration = duration
             // 애니메이션이 끝난 후 필요한 작업이 있다면 여기에 추가
-            binding.aniWave.playAnimation() // Lottie 애니메이션 시작
-            binding.aniWave.visibility = View.VISIBLE
+            binding?.aniWave?.playAnimation() // Lottie 애니메이션 시작
+            binding?.aniWave?.visibility = View.VISIBLE
             start()
         }
+
     }
 
+    private var stopAnimator: ValueAnimator? = null;
     private fun stopVoice() {
         val startScale = 1f
         // 종료 스케일 (1f는 원래 크기)
         val endScale = 0.1f
         // 애니메이션 지속 시간 (밀리초)
         val duration = 1000L
-        try{
-            ValueAnimator.ofFloat(startScale, endScale).apply {
-                addUpdateListener { animator ->
-                    val scale = animator.animatedValue as Float
-                    binding.aniWave.scaleY = scale
-                }
-                interpolator = AccelerateDecelerateInterpolator()
-                this.duration = duration
-                doOnEnd {
-                    binding.aniWave.cancelAnimation()
-                    binding.aniWave.visibility = View.GONE
-                }
-                start()
-            }
-        } catch (_: Exception) {
 
+        stopAnimator = ValueAnimator.ofFloat(startScale, endScale).apply {
+            addUpdateListener { animator ->
+                val scale = animator.animatedValue as Float
+                binding?.aniWave?.scaleY = scale
+            }
+            interpolator = AccelerateDecelerateInterpolator()
+            this.duration = duration
+            doOnEnd {
+                binding?.aniWave?.cancelAnimation()
+                binding?.aniWave?.visibility = View.GONE
+            }
+            start()
         }
 
     }
-
-
 
 
     override fun onDestroyView() {
