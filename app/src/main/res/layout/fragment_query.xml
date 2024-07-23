@@ -54,9 +54,9 @@
                     android:id="@+id/btn_query"
                     android:layout_width="wrap_content"
                     android:layout_height="60dp"
-                    android:text="@string/send"
+                    android:text="@string/query"
                     android:enabled="false"
-                    android:contentDescription="@string/send" />
+                    android:contentDescription="@string/guide" />
             <ToggleButton
                     android:id="@+id/btn_query_continue"
                     android:layout_width="wrap_content"

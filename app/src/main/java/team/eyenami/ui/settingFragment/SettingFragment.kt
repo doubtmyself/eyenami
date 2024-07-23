@@ -21,7 +21,7 @@ class SettingFragment : Fragment(R.layout.fragment_setting) {
     }
 
     private fun initialize() {
-        binding.itemVibration.switchCheck.isChecked = SettingManager.getVibrateRun()
+//        binding.itemVibration.switchCheck.isChecked = SettingManager.getVibrateRun()
 
         binding.itemDetectionCount.numberPicker.minValue = 5
         binding.itemDetectionCount.numberPicker.maxValue = 60
@@ -29,14 +29,14 @@ class SettingFragment : Fragment(R.layout.fragment_setting) {
     }
 
     private fun addListener() {
-        binding.itemVibration.root.setOnClickListener {
-            binding.itemVibration.switchCheck.toggle()
-        }
-        binding.itemVibration.switchCheck.setOnClickListener { view ->
-            if (view is SwitchCompat) {
-                SettingManager.setVibrateRun(view.isChecked)
-            }
-        }
+//        binding.itemVibration.root.setOnClickListener {
+//            binding.itemVibration.switchCheck.toggle()
+//        }
+//        binding.itemVibration.switchCheck.setOnClickListener { view ->
+//            if (view is SwitchCompat) {
+//                SettingManager.setVibrateRun(view.isChecked)
+//            }
+//        }
 
 //        binding.itemDetectionCount.numberPicker.setOnValueChangedListener { picker, oldVal, newVal ->
 //            if(oldVal == newVal)
